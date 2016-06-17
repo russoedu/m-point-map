@@ -1,0 +1,53 @@
+m-map {
+  .list {
+    overflow-y: scroll;
+  }
+  .animate {
+    transition: all 0.5s ease-in-out;
+  }
+  #zoom-map {
+    border-bottom-width: 1px;
+  }
+  #zoom-list {
+    border-top-width: 1px;
+  }
+  .marker  {
+    h1 {
+      font-size: 16px;
+    }
+    p {
+      font-style: normal;
+    }
+  }
+  #zoom-list {
+    p {
+      margin: -5px 0 5px 0;
+    }
+  }
+  #zoom-map {
+    p {
+      margin: 5px 0 -5px 0;
+    }
+  }
+  .zoom-button {
+    background-color: white;
+    overflow: hidden;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 400;
+    border-style: solid;
+    border-color: #aaa;
+    text-align: -webkit-center;
+    i {
+      font-size: 10px;
+      margin: 0;
+    }
+    .ng-enter, .ng-leave.ng-leave-active {
+      opacity:0;
+    }
+
+    .ng-leave, .ng-enter.ng-enter-active {
+      opacity:1;
+    }
+  }
+}

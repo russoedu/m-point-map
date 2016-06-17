@@ -1,0 +1,8 @@
+{
+  "zoom_list": "Show locations list",
+  "zoom_map": "Show map",
+  "open_in_map_app_title": "Open in app?",
+  "open_in_map_app_message": "Do you want to open this address in an external map app?",
+  "confirm": "open",
+  "cancel": "cancel"
+}

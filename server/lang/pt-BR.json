@@ -1,0 +1,32 @@
+{
+  "moblet": {
+    "label": "Mapa de múltiplos pontos",
+    "hint": "Crie um mapa com uma lista de lugares",
+    "description": "Preencha os campos abaixo para criar a página de mapa"
+  },
+  "mapTypeId": {
+    "label": "Tipo de mapa",
+    "hint": "Escolha o tipo de mapa",
+    "default": "Escolha um tipo",
+    "roadmap": "Ruas",
+    "satelite": "Satélite",
+    "hybrid": "Híbrido",
+    "terrain": "Terreno"
+  },
+  "locations": {
+    "label": "Lista de lugares",
+    "hint": "Insira os lugares desejados",
+    "list_button": "Adicionar lugares"
+  },
+  "address": {
+    "label": "Endereço",
+    "hint": "Endereço exato do lugar",
+    "placeholder": "1062 Lombard St - San Francisco, CA 94133 - EUA",
+    "error_address": "Endereço não encontrado"
+  },
+  "title": {
+    "label": "Título",
+    "hint": "Título do lugar",
+    "placeholder": "Lombard Street"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "fields": [
+    {
+      "name": "locations",
+      "type": "list",
+      "fields": [
+        {
+          "name": "title",
+          "type": "text",
+          "required": true,
+          "min-length": 1,
+          "max-length": 30
+        },
+        {
+          "name": "address",
+          "type": "text",
+          "required": true,
+          "min-length": 3,
+          "max-length": 255
+        }
+      ]
+    },
+    {
+      "name": "mapTypeId",
+      "required": true,
+      "type": "select",
+      "values": {
+        "ROADMAP": "roadmap",
+        "SATELLITE": "satelite",
+        "HYBRID": "hybrid",
+        "TERRAIN": "terrain"
+      }
+    }
+  ]
+}

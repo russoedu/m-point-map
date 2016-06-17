@@ -1,0 +1,32 @@
+{
+  "moblet": {
+    "label": "Multipoint Map",
+    "hint": "Create a map with a list of locations",
+    "description": "Fill out the form below to create the map page"
+  },
+  "mapTypeId": {
+    "label": "Map type",
+    "hint": "Choose the map type",
+    "default": "Choose a type",
+    "roadmap": "Streets",
+    "satelite": "Satelite",
+    "hybrid": "Hybrid",
+    "terrain": "Terrain"
+  },
+  "locations": {
+    "label": "Locations list",
+    "hint": "Insert the desired locations",
+    "list_button": "Add locations"
+  },
+  "address": {
+    "label": "Address",
+    "hint": "The exact address of the location",
+    "placeholder": "1062 Lombard St - San Francisco, CA 94133 - EUA",
+    "error_address": "Address not found"
+  },
+  "title": {
+    "label": "Title",
+    "hint": "The title of the location",
+    "placeholder": "Lombard Street"
+  }
+}

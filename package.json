@@ -1,0 +1,33 @@
+{
+  "name": "m-map",
+  "version": "1.0.0",
+  "description": "This is a Map moblet for Moblets and FabApp. You can use it as base to create a new one.",
+  "main": "feed.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:moblets/m-map.git"
+  },
+  "author": "Eduardo Russo",
+  "license": "MIT",
+  "homepage": "https://github.com/moblets",
+  "devDependencies": {
+    "eslint": "^2.8.0",
+    "eslint-config-google": "^0.5.0",
+    "eslint-plugin-jsdoc": "^2.3.1",
+    "jsdoc": "^3.4.0"
+  },
+  "keywords": [
+    "map",
+    "maps",
+    "google maps",
+    "gps",
+    "positioning",
+    "guide",
+    "moblet",
+    "Moblets",
+    "FabApp"
+  ]
+}

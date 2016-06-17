@@ -1,0 +1,26 @@
+<u-moblet is-loading="isLoading" init="init" inner-scroll="true">
+  <div id="wraper" u-make-frame-min-size >
+    <div id="zoom-map" class="zoom-button" ng-style="{'height':zoomMapButtonHeight}" ng-click="zoomMap()">
+      <div class="zoom-buttom-wraper" ng-style="{'height':zoomMapButtonHeight}">
+        <p translate="zoom_map"></p>
+        <i class="icon ion-chevron-down"></i>
+      </div>
+    </div>
+    <div id="m-map-{{moblet.id}}"ng-click="zoomMap()" ng-style="{'height':mapHeight}"></div>
+    <div id="zoom-list" class="zoom-button" ng-style="{'height':zoomListButtonHeight}" ng-click="zoomList()">
+      <div class="zoom-buttom-wraper" ng-style="{'height':zoomListButtonHeight}">
+        <i class="icon ion-chevron-up"></i>
+        <p translate="zoom_list">
+      </div>
+    </div>
+    <ion-scroll id="m-map-list" overflow-scroll="false" direction="y" delegate-handle="listMapScroll" ng-style="{'height':listHeight}" ng-click="zoomList()">
+      <div class="list">
+          <div class="item item-icon-right" ng-repeat="(key, location) in mapData.locations">
+            <h2>{{location.title}}</h2>
+            <p>{{location.address}}</p>
+            <i class="icon ion-ios-navigate" ng-click="openLocation(key)"></i>
+          </div>
+      </div>
+    </ion-scroll>
+  </div>
+</u-moblet>
