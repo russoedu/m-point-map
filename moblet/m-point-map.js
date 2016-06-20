@@ -71,16 +71,18 @@ module.exports = {
      * Add the markers to the map
      * @param  {Array} locations Array of objects with each location detail
      */
-    var addMarkers = function(locations) {
+    var addMarkers = function(locations, icon, draggable) {
       // Add the pins
       for (var j = 0; j < locations.length; j++) {
         var infoWindow = new google.maps.InfoWindow();
         var marker = new google.maps.Marker(
           {
             position: new google.maps.LatLng(
-              locations[j].latitude,
-              locations[j].longitude
+              locations[j].lat,
+              locations[j].lng
             ),
+            icon: icon || null,
+            draggable: draggable || false,
             map: $scope.googleMap,
             animation: google.maps.Animation.DROP
           }
@@ -96,42 +98,29 @@ module.exports = {
 
     /**
      * Find the user current location
+     * @param  {userCurrentLocationCallback} callback The current user location
      */
     var findUserLocation = function(callback) {
+      /**
+       * @callback userCurrentLocationCallback
+       * @param  {Geoposition} userLocation The current user Geopostion
+       */
       if (navigator.geolocation) {
         browserSupportFlag = true;
         navigator.geolocation.getCurrentPosition(function(position) {
-          initialLocation = new google.maps.LatLng(
-            position.coords.latitude, position.coords.longitude
-          );
-          var pos = {
+          var userLocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           };
-          marker = new google.maps.Marker({
-            position: pos,
-            map: $scope.googleMap,
-            animation: google.maps.Animation.DROP,
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              fillColor: '#46AEE2',
-              fillOpacity: 0.9,
-              strokeColor: '#4778BB',
-              strokeWeight: 2,
-              scale: 8
-            }
-          });
-          $scope.myLocation = {
-            lat: position.coords.latitude,
-            long: position.coords.longitude
-          };
-          callback(position);
+          callback(userLocation);
         }, function() {
           handleNoGeolocation(browserSupportFlag);
+          callback(null);
         });
       } else {
         browserSupportFlag = false;
         handleNoGeolocation(browserSupportFlag);
+        callback(null);
       }
     };
 
@@ -165,17 +154,7 @@ module.exports = {
     };
 
     var loadMap = function() {
-      // $timeout(function() {
-        // Wait until 'maps api' has been injected
-        // if (typeof google === "undefined") {
-          // loadMap();
-        // } else {
-          // Find and set user location
-      findUserLocation(function(position) {
-      //   console.log('----------------------------------------');
-      //   console.log(position);
-      //   console.log('----------------------------------------');
-
+      findUserLocation(function(userLocation) {
         $scope.googleMap = google;
             // var mapData = $scope.mapData;
           // var locations = mapData.locations;
@@ -188,20 +167,24 @@ module.exports = {
           panControl: true,
           rotateControl: true,
           zoomControl: true,
-          center: new google.maps.LatLng(
-              position.coords.latitude,
-              position.coords.longitude
-            ),
+          center: userLocation,
           zoom: 8,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
         $scope.googleMap = new google.maps.Map(mapDiv, mapOptions);
 
-        addMarkers([{
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        }]);
+        var icon = {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: '#46AEE2',
+          fillOpacity: 0.9,
+          strokeColor: '#4778BB',
+          strokeWeight: 2,
+          scale: 8
+        };
+
+        addMarkers([userLocation], icon, true);
+
         $scope.firebaseApp.database()
           .ref('locations').on("value", function(snapshot) {
             var locationsArray = [];
@@ -209,8 +192,8 @@ module.exports = {
             for (var key in locationsFromFirebase) {
               if (locationsFromFirebase.hasOwnProperty(key)) {
                 locationsArray.push({
-                  latitude: locationsFromFirebase[key].lat,
-                  longitude: locationsFromFirebase[key].long
+                  lat: locationsFromFirebase[key].lat,
+                  lng: locationsFromFirebase[key].lng
                 });
               }
             }
