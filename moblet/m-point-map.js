@@ -67,31 +67,36 @@ module.exports = {
         infoWindow.open($scope.googleMap, marker);
       };
     };
+
     /**
      * Add the markers to the map
      * @param  {Array} locations Array of objects with each location detail
+     * @param  {Object} icon Icon object
+     * @param  {boolean} draggable If the marker is draggable
+     * @param  {boolean} animation If the marker is animated
      */
-    var addMarkers = function(locations, icon, draggable) {
+    var addMarkers = function(locations, icon, draggable, animation) {
       // Add the pins
-      for (var j = 0; j < locations.length; j++) {
-        var infoWindow = new google.maps.InfoWindow();
-        var marker = new google.maps.Marker(
-          {
-            position: new google.maps.LatLng(
-              locations[j].lat,
-              locations[j].lng
-            ),
-            icon: icon || null,
-            draggable: draggable || false,
-            map: $scope.googleMap,
-            animation: google.maps.Animation.DROP
-          }
-        );
+      for (var i = 0; i < locations.length; i++) {
+        var markerOption = {
+          position: locations[i],
+          icon: icon || null,
+          draggable: draggable || false,
+          map: $scope.googleMap,
+          animation: google.maps.Animation.DROP
+        };
+        if (animation === false) {
+          markerOption.animation = null;
+        }
+
+        var marker = new google.maps.Marker(markerOption);
+
         // Add the pins content
+        var infoWindow = new google.maps.InfoWindow();
         google.maps.event.addListener(
           marker,
           'click',
-          markerListener(infoWindow, marker, locations[j])
+          markerListener(infoWindow, marker, locations[i])
         );
       }
     };
@@ -137,6 +142,9 @@ module.exports = {
 
     var loadFirebase = function(callback) {
       $timeout(function() {
+        /*
+         * TODO don't create Firebase app twice…
+         */
         // Wait until 'firebase api' has been injected
         if (typeof firebase === "undefined") {
           loadFirebase();
@@ -162,13 +170,13 @@ module.exports = {
 
           // Set the map options
         var mapOptions = {
-          mapTypeControl: true,
+          mapTypeControl: false,
           streetViewControl: true,
-          panControl: true,
-          rotateControl: true,
-          zoomControl: true,
+          panControl: false,
+          rotateControl: false,
+          zoomControl: false,
           center: userLocation,
-          zoom: 8,
+          zoom: 10,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
@@ -183,7 +191,7 @@ module.exports = {
           scale: 8
         };
 
-        addMarkers([userLocation], icon, true);
+        addMarkers([userLocation], icon, true, false);
 
         $scope.firebaseApp.database()
           .ref('locations').on("value", function(snapshot) {
@@ -193,11 +201,12 @@ module.exports = {
               if (locationsFromFirebase.hasOwnProperty(key)) {
                 locationsArray.push({
                   lat: locationsFromFirebase[key].lat,
-                  lng: locationsFromFirebase[key].lng
+                  lng: locationsFromFirebase[key].lng,
+                  title: locationsFromFirebase[key].title,
+                  description: locationsFromFirebase[key].description
                 });
               }
             }
-            console.log(locationsArray);
             addMarkers(locationsArray);
           }, function(errorObject) {
             console.log("The read failed: " + errorObject.code);
@@ -232,6 +241,7 @@ module.exports = {
     };
 
     var init = function() {
+      $scope.isLoading = true;
       loadFirebase(function(firebaseApp) {
         $scope.firebaseApp = firebaseApp;
         $scope.isLoading = true;
