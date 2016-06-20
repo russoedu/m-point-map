@@ -21,8 +21,7 @@ module.exports = {
     $ionicScrollDelegate,
     $uAlert,
     $timeout,
-    $mFrameSize,
-    $rootScope
+    $mFrameSize
   ) {
     /**
      * Find the center of the map based on the locations.
@@ -56,6 +55,13 @@ module.exports = {
     //   $scope.mapData.centerLongitude = (longitudeMax + longitudeMin) / 2;
     //   $scope.mapData.centerLatitude = (latitudeMax + latitudeMin) / 2;
     // };
+    var setProblems = function() {
+      $scope.problemTypes = {
+        cobertor: false,
+        roupa: false,
+        comida: false
+      };
+    };
 
     var markerListener = function(infoWindow, marker, location) {
       return function() {
@@ -68,6 +74,79 @@ module.exports = {
       };
     };
 
+    var geocodePosition = function(pos, callback) {
+      var location = {
+        lat: pos.lat(),
+        lng: pos.lng()
+      };
+      geocoder = new google.maps.Geocoder();
+      geocoder.geocode({
+        latLng: pos
+      },
+        function(results, status) {
+          if (status === google.maps.GeocoderStatus.OK) {
+            console.log(results[0].formatted_address);
+            location.address = results[0].formatted_address;
+            if (typeof callback === "function") {
+              callback(location);
+            }
+            // $("#mapSearchInput").val(results[0].formatted_address);
+            // $("#mapErrorMsg").hide(100);
+          } else {
+            console.log(status);
+            // $("#mapErrorMsg").html('FOK.' + status).show(100);
+          }
+        }
+    );
+    };
+
+    var addMarker = function(location, icon, draggable, animation, locationType) {
+      var markerOption = {
+        position: location,
+        icon: icon || null,
+        draggable: draggable || false,
+        map: $scope.googleMap,
+        animation: google.maps.Animation.DROP
+      };
+      if (animation === false) {
+        markerOption.animation = null;
+      }
+
+      var marker = new google.maps.Marker(markerOption);
+
+      // Add the pins content
+      var infoWindow = new google.maps.InfoWindow();
+
+      google.maps.event.addListener(
+        marker,
+        'click',
+        markerListener(infoWindow, marker, location)
+      );
+      if (locationType === "user") {
+        geocodePosition(marker.getPosition(), function(location) {
+          $scope.userLocation = location;
+          console.log('$scope.userLocation', $scope.userLocation);
+        });
+      } else if (locationType === "problem") {
+        geocodePosition(marker.getPosition(), function(location) {
+          $scope.problemLocation = location;
+          console.log('$scope.problemLocation', $scope.problemLocation);
+        });
+      }
+      if (draggable) {
+        google.maps.event.addListener(
+          marker,
+          'dragend',
+          function() {
+            geocodePosition(marker.getPosition(), function(markerLocation) {
+              $scope.markerLocation = markerLocation;
+            });
+          }
+        );
+      }
+
+      return marker;
+    };
     /**
      * Add the markers to the map
      * @param  {Array} locations Array of objects with each location detail
@@ -78,26 +157,7 @@ module.exports = {
     var addMarkers = function(locations, icon, draggable, animation) {
       // Add the pins
       for (var i = 0; i < locations.length; i++) {
-        var markerOption = {
-          position: locations[i],
-          icon: icon || null,
-          draggable: draggable || false,
-          map: $scope.googleMap,
-          animation: google.maps.Animation.DROP
-        };
-        if (animation === false) {
-          markerOption.animation = null;
-        }
-
-        var marker = new google.maps.Marker(markerOption);
-
-        // Add the pins content
-        var infoWindow = new google.maps.InfoWindow();
-        google.maps.event.addListener(
-          marker,
-          'click',
-          markerListener(infoWindow, marker, locations[i])
-        );
+        addMarker(locations[i], icon, draggable, animation);
       }
     };
 
@@ -148,6 +208,8 @@ module.exports = {
         // Wait until 'firebase api' has been injected
         if (typeof firebase === "undefined") {
           loadFirebase();
+        } else if (isDefined(window.firebaseApp)) {
+          callback(window.firebaseApp);
         } else {
           var config = {
             apiKey: "AIzaSyCIuFP_4PlDGJV9iE_XZN5JiX37ZaZTSeE",
@@ -155,8 +217,8 @@ module.exports = {
             databaseURL: "https://sem-frio.firebaseio.com",
             storageBucket: "sem-frio.appspot.com"
           };
-          var firebaseApp = firebase.initializeApp(config);
-          callback(firebaseApp);
+          window.firebaseApp = firebase.initializeApp(config);
+          callback(window.firebaseApp);
         }
       }, 500);
     };
@@ -164,6 +226,7 @@ module.exports = {
     var loadMap = function() {
       findUserLocation(function(userLocation) {
         $scope.googleMap = google;
+        $scope.userLocation = userLocation;
             // var mapData = $scope.mapData;
           // var locations = mapData.locations;
         var mapDiv = document.getElementById('m-point-map-1');
@@ -174,9 +237,9 @@ module.exports = {
           streetViewControl: true,
           panControl: false,
           rotateControl: false,
-          zoomControl: false,
+          zoomControl: true,
           center: userLocation,
-          zoom: 10,
+          zoom: 15,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
@@ -191,7 +254,37 @@ module.exports = {
           scale: 8
         };
 
-        addMarkers([userLocation], icon, true, false);
+        $scope.userLocationMarker = addMarker(
+          userLocation, icon, false, false, 'user'
+        );
+
+        // added var
+        $scope.problemMarker = null;
+
+        $scope.googleMap.addListener('click', function(pos) {
+          console.log(pos);
+          var location = {
+            lat: pos.latLng.lat(),
+            lng: pos.latLng.lng()
+          };
+
+          // added
+          if ($scope.problemMarker !== null) {
+            $scope.problemMarker.setMap(null);
+          }
+
+          $scope.problemMarker = addMarker(
+            location, null, true, true, 'problem'
+          );
+
+          // added listener
+          $scope.problemMarker.addListener("dblclick", function() {
+            $scope.problemMarker.setMap(null);
+            $scope.problemMarker = null;
+            $scope.problemLocation = undefined;
+          });
+          // location, icon, draggable, animation, myLocation
+        });
 
         $scope.firebaseApp.database()
           .ref('locations').on("value", function(snapshot) {
@@ -242,6 +335,7 @@ module.exports = {
 
     var init = function() {
       $scope.isLoading = true;
+      setProblems();
       loadFirebase(function(firebaseApp) {
         $scope.firebaseApp = firebaseApp;
         $scope.isLoading = true;
@@ -299,10 +393,27 @@ module.exports = {
     };
 
     $scope.addMyLocation = function() {
-      console.log($scope.myLocation);
+      $scope.markerLocation = angular.copy($scope.userLocation);
+      console.log('---------------------------------------');
+      console.log($scope.problemMarker);
+      console.log($scope.userLocation);
+      console.log('---------------------------------------');
+      if ($scope.problemLocation !== undefined) {
+        $scope.markerLocation = angular.copy($scope.problemLocation);
+        $scope.problemLocation = null;
+        $scope.problemMarker.setMap(null);
+        $scope.problemMarker = null;
+      }
+      $scope.markerLocation.problems = angular.copy($scope.problemTypes);
+      setProblems();
+      console.log($scope.markerLocation);
       $scope.firebaseApp.database()
-      .ref('locations')
-      .push($scope.myLocation);
+        .ref('locations')
+        .push($scope.markerLocation);
+
+      $timeout(function() {
+        $scope.zoomMap();
+      }, 10);
     };
 
     $scope.openLocation = function(key) {
@@ -325,8 +436,6 @@ module.exports = {
           }
         });
     };
-    $rootScope.$on("$$ionicView.afterEnter", function() {
-      init();
-    });
+    init();
   }
 };

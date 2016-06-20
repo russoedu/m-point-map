@@ -2,7 +2,7 @@
   <div id="wraper">
     <div id="zoom-map" class="zoom-button" ng-style="{'height':zoomMapButtonHeight}" ng-click="zoomMap()">
       <div class="zoom-buttom-wraper" ng-style="{'height':zoomMapButtonHeight}">
-        <p translate="zoom_map"></p>
+        <p>Mostrar mapa</p>
         <i class="icon ion-chevron-down"></i>
       </div>
     </div>
@@ -10,12 +10,23 @@
     <div id="zoom-list" class="zoom-button" ng-style="{'height':zoomListButtonHeight}" ng-click="zoomList()">
       <div class="zoom-buttom-wraper" ng-style="{'height':zoomListButtonHeight}">
         <i class="icon ion-chevron-up"></i>
-        <p translate="zoom_list">
+        <p>Adicionar um local</p>
       </div>
     </div>
     <ion-scroll id="m-point-map-list" overflow-scroll="false" direction="y" delegate-handle="listMapScroll" ng-style="{'height':listHeight}" ng-click="zoomList()">
       <div class="list">
-          <button class="button" ng-click="addMyLocation()">Vai filhão</button>
+        <div class="item item-divider">
+          Problemas
+        </div>
+        <ion-toggle ng-repeat="(key, problemType) in problemTypes"
+                    ng-model="problemTypes[key]"
+                    ng-checked="problemType">
+          {{ key }}
+        </ion-toggle>
+        <div class="item">
+          <button class="button" ng-click="addMyLocation()">Enviar problemas</button>
+        </div>
+
       </div>
     </ion-scroll>
   </div>
