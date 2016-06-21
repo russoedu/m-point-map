@@ -23,6 +23,8 @@ module.exports = {
     $timeout,
     $mFrameSize
   ) {
+    var USER = 0;
+    var PROBLEM = 1;
     /* ********************************************************************** *
      *                     PRIVATE FUNCTIONS AND VARS
      * ********************************************************************** */
@@ -64,85 +66,106 @@ module.exports = {
       };
     };
 
-    var geocodePosition = function(pos, callback) {
-      var location = {
-        lat: pos.lat(),
-        lng: pos.lng()
-      };
+    /**
+     * Get a location with it's address from Maps API
+     * @param  {object}   markerPosition      marker.getPosition() object
+     * @param  {locationCallback} callback Return the location with the address
+     */
+    var getLocationWithAddress = function(markerPosition, callback) {
+      /**
+       * @callback locationCallback
+       * @param {object} location Location with lat, lng and address
+       */
       geocoder = new google.maps.Geocoder();
-      geocoder.geocode({
-        latLng: pos
-      },
-        function(results, status) {
-          if (status === google.maps.GeocoderStatus.OK) {
-            location.address = results[0].formatted_address;
-            if (typeof callback === "function") {
-              callback(location);
-            }
+      geocoder.geocode({latLng: markerPosition}, function(results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+          var location = {
+            lat: markerPosition.lat(),
+            lng: markerPosition.lng(),
+            address: results[0].formatted_address
+          };
+          if (typeof callback === "function") {
+            callback(location);
+          }
             // $("#mapSearchInput").val(results[0].formatted_address);
             // $("#mapErrorMsg").hide(100);
-          } else {
-            console.log(status);
+        } else {
+          console.log(status);
             // $("#mapErrorMsg").html('FOK.' + status).show(100);
-          }
         }
-    );
+      });
     };
 
-    var addMarker = function(location, icon, draggable, animation, locationType) {
+    /**
+     * Add a new marker to the map
+     * @param  {object} location     Location with lat, lng, address and
+     * problems array
+     * @param  {object} icon         Google Maps icon object
+     * @param  {boolean} drag         Set if the marker is draggable
+     * @param  {boolean} anime        Set if the icon show animate
+     * @param  {integer} locationType The location type can be USER or PROBLEM
+     * @return {Google Maps _.fe object}    The created marker
+     */
+    var addMarker = function(location, icon, drag, anime, locationType) {
       var markerOption = {
         position: location,
         icon: icon || null,
-        draggable: draggable || false,
+        draggable: drag || false,
         map: $scope.googleMap,
         animation: google.maps.Animation.DROP
       };
-      if (animation === false) {
+      if (anime === false) {
         markerOption.animation = null;
       }
 
       var marker = new google.maps.Marker(markerOption);
 
-      google.maps.event.addListener(
-        marker,
-        'click',
-        createInfoWindow(new google.maps.InfoWindow(), marker, location)
-      );
-      if (locationType === "user") {
-        geocodePosition(marker.getPosition(), function(location) {
+      if (locationType === USER) {
+        getLocationWithAddress(marker.getPosition(), function(location) {
           $scope.userLocation = location;
         });
-      } else if (locationType === "problem") {
-        geocodePosition(marker.getPosition(), function(location) {
+      } else if (locationType === PROBLEM) {
+        getLocationWithAddress(marker.getPosition(), function(location) {
           $scope.problemLocation = location;
         });
+      // Only add the InfoWindow if it's a problem already added
+      } else {
+        google.maps.event.addListener(
+          marker,
+          'click',
+          createInfoWindow(new google.maps.InfoWindow(), marker, location)
+        );
       }
-      if (draggable) {
+      if (drag) {
         google.maps.event.addListener(
           marker,
           'dragend',
           function() {
-            geocodePosition(marker.getPosition(), function(markerLocation) {
-              $scope.markerLocation = markerLocation;
-            });
+            getLocationWithAddress(
+              marker.getPosition(),
+              function(markerLocation) {
+                $scope.markerLocation = markerLocation;
+              }
+            );
           }
         );
       }
 
       return marker;
     };
+
     /**
      * Add the markers to the map
-     * @param  {Array} locations Array of objects with each location detail
-     * @param  {Object} icon Icon object
-     * @param  {boolean} draggable If the marker is draggable
-     * @param  {boolean} animation If the marker is animated
+     * @param  {array} locations Locations array with location object with
+     * lat, lng, address and problems array
      */
-    var addMarkers = function(locations, icon, draggable, animation) {
+    var addMarkers = function(locations) {
       for (var key in locations) {
         if (locations.hasOwnProperty(key)) {
-          console.log(locations[key]);
-          addMarker(locations[key], icon, draggable, animation);
+          /*
+           * TODO: set icon according to the problem
+           */
+          addMarker(locations[key]);
         }
       }
     };
@@ -154,7 +177,8 @@ module.exports = {
     var findUserLocation = function(callback) {
       /**
        * @callback userCurrentLocationCallback
-       * @param  {Geoposition} userLocation The current user Geopostion
+       * @param  {object} userLocation The current user location with lat
+       * and lng
        */
       if (navigator.geolocation) {
         browserSupportFlag = true;
@@ -241,7 +265,7 @@ module.exports = {
         };
 
         $scope.userLocationMarker = addMarker(
-          userLocation, icon, false, false, 'user'
+          userLocation, icon, false, false, USER
         );
 
         // added var
@@ -259,7 +283,7 @@ module.exports = {
           }
 
           $scope.problemMarker = addMarker(
-            location, null, true, true, 'problem'
+            location, null, true, true, PROBLEM
           );
 
           // added listener
@@ -273,20 +297,9 @@ module.exports = {
 
         $scope.firebaseApp.database()
           .ref('locations').on("value", function(snapshot) {
-            var locationsArray = [];
-            var locationsFromFirebase = snapshot.val();
-            // console.log(locationsFromFirebase);
-            // for (var key in locationsFromFirebase) {
-            //   if (locationsFromFirebase.hasOwnProperty(key)) {
-            //     locationsArray.push({
-            //       lat: locationsFromFirebase[key].lat,
-            //       lng: locationsFromFirebase[key].lng,
-            //       title: locationsFromFirebase[key].title,
-            //       description: locationsFromFirebase[key].description
-            //     });
-            //   }
-            // }
-            addMarkers(locationsFromFirebase);
+            var locations = snapshot.val();
+
+            addMarkers(locations);
           }, function(errorObject) {
             console.log("The read failed: " + errorObject.code);
           });
