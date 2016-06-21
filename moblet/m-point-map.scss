@@ -29,6 +29,9 @@ m-point-map {
       margin: 5px 0 -5px 0;
     }
   }
+  .button {
+    width: 100%;
+  }
   .marker {
     h1 {
       font-size: 12px;
@@ -45,7 +48,8 @@ m-point-map {
     }
   }
   .zoom-button {
-    background-color: white;
+    background-color: #387ef5;
+    color: white;
     overflow: hidden;
     text-align: center;
     font-size: 16px;

@@ -23,16 +23,24 @@ module.exports = {
     $timeout,
     $mFrameSize
   ) {
-    var USER = 0;
-    var PROBLEM = 1;
     /* ********************************************************************** *
      *                     PRIVATE FUNCTIONS AND VARS
      * ********************************************************************** */
+    var USER = 0;
+    var PROBLEM = 1;
+
+    var googleMap;
+    var firebaseApp;
+    var userLocation;
+    var problemLocation;
+    var markerLocation;
+    var problemMarker;
+
     /**
-     * Create the problemTypes $scope object
+     * Create the problems $scope object
      */
     var setProblems = function() {
-      $scope.problemTypes = {
+      $scope.problems = {
         cobertor: false,
         roupa: false,
         comida: false
@@ -41,12 +49,14 @@ module.exports = {
 
     /**
      * Create the info window with the location details
-     * @param  {InfoWindow} infoWindow google.maps.InfoWindow object
-     * @param  {Marker} marker     google.maps.Marker object
      * @param  {object} location   The location stored in the DB
-     * @return {function}        The info window that will be opened on click
+     * @param {infoWindowCallback}   callback The info window that will be opened on click
      */
-    var createInfoWindow = function(infoWindow, marker, location) {
+    var createInfoWindow = function(location, callback) {
+      /**
+       * infoWindowCallback
+       * @param {infoWindow object} infoWindow The created info window
+       */
       var problems = '';
       for (var key in location.problems) {
         if (location.problems.hasOwnProperty(key)) {
@@ -56,14 +66,15 @@ module.exports = {
           }
         }
       }
-      return function() {
-        infoWindow.setContent(
-          '<div class="marker">' +
-          '<p>' + location.address + '</p>' +
-          problems +
-          '</div>');
-        infoWindow.open($scope.googleMap, marker);
-      };
+      var infoWindowStr = '<div class="marker"><p>' + location.address +
+      '</p>' + problems + '</div>';
+
+      infoWindow = new google.maps.InfoWindow({
+        content: infoWindowStr,
+        maxWidth: window.innerWidth - 20
+      });
+
+      callback(infoWindow);
     };
 
     /**
@@ -104,14 +115,14 @@ module.exports = {
      * @param  {boolean} drag         Set if the marker is draggable
      * @param  {boolean} anime        Set if the icon show animate
      * @param  {integer} locationType The location type can be USER or PROBLEM
-     * @return {Google Maps _.fe object}    The created marker
+     * @return {GoogleMapsObject}    The created marker
      */
     var addMarker = function(location, icon, drag, anime, locationType) {
       var markerOption = {
         position: location,
         icon: icon || null,
         draggable: drag || false,
-        map: $scope.googleMap,
+        map: googleMap,
         animation: google.maps.Animation.DROP
       };
       if (anime === false) {
@@ -122,19 +133,19 @@ module.exports = {
 
       if (locationType === USER) {
         getLocationWithAddress(marker.getPosition(), function(location) {
-          $scope.userLocation = location;
+          userLocation = location;
         });
       } else if (locationType === PROBLEM) {
         getLocationWithAddress(marker.getPosition(), function(location) {
-          $scope.problemLocation = location;
+          problemLocation = location;
         });
       // Only add the InfoWindow if it's a problem already added
       } else {
-        google.maps.event.addListener(
-          marker,
-          'click',
-          createInfoWindow(new google.maps.InfoWindow(), marker, location)
-        );
+        marker.addListener('click', function() {
+          createInfoWindow(location, function(infoWindow) {
+            infoWindow.open(googleMap, marker);
+          });
+        });
       }
       if (drag) {
         google.maps.event.addListener(
@@ -143,8 +154,8 @@ module.exports = {
           function() {
             getLocationWithAddress(
               marker.getPosition(),
-              function(markerLocation) {
-                $scope.markerLocation = markerLocation;
+              function(location) {
+                markerLocation = location;
               }
             );
           }
@@ -180,6 +191,11 @@ module.exports = {
        * @param  {object} userLocation The current user location with lat
        * and lng
        */
+      // São Paulo center
+      var defaultLocation = {
+        lat: -23.6821604,
+        lng: -46.8754891
+      };
       if (navigator.geolocation) {
         browserSupportFlag = true;
         navigator.geolocation.getCurrentPosition(function(position) {
@@ -189,32 +205,33 @@ module.exports = {
           };
           callback(userLocation);
         }, function() {
-          handleNoGeolocation(browserSupportFlag);
-          callback(null);
+          callback(defaultLocation);
         });
       } else {
         browserSupportFlag = false;
-        handleNoGeolocation(browserSupportFlag);
-        callback(null);
+        callback(defaultLocation);
       }
     };
 
     /**
-     * Uses "u-make-frame-min-size" to split the screen in percentage
-     * @param  {Integer} factor The percentage of the screen the element
-     * should use
-     * @return {String}        The height in pixels with "px" in the end
+     * Uses "mFrameSize" to get the size of the screen less the button
+     * @return {string}        The height of the rest of the screen
      */
     var screenHeightLessButton = function() {
       var height = parseInt($mFrameSize.height(), 10);
       return (height - 44) + "px";
     };
 
+    /**
+     * Load Firebase app to the window
+     * @param  {firebaseAppCallback} callback Return the Firebase app
+     */
     var loadFirebase = function(callback) {
+      /**
+       * @callback  firebaseAppCallback
+       * @param {firebase app}           The Firebase app in the window object
+       */
       $timeout(function() {
-        /*
-         * TODO don't create Firebase app twice…
-         */
         // Wait until 'firebase api' has been injected
         if (typeof firebase === "undefined") {
           loadFirebase();
@@ -233,12 +250,13 @@ module.exports = {
       }, 500);
     };
 
+    /**
+     * Load the map and add it to m-point-map-1 div
+     */
     var loadMap = function() {
-      findUserLocation(function(userLocation) {
-        $scope.googleMap = google;
-        $scope.userLocation = userLocation;
-            // var mapData = $scope.mapData;
-          // var locations = mapData.locations;
+      findUserLocation(function(location) {
+        userLocation = location;
+
         var mapDiv = document.getElementById('m-point-map-1');
 
           // Set the map options
@@ -249,11 +267,11 @@ module.exports = {
           rotateControl: false,
           zoomControl: true,
           center: userLocation,
-          zoom: 15,
+          zoom: 12,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
-        $scope.googleMap = new google.maps.Map(mapDiv, mapOptions);
+        googleMap = new google.maps.Map(mapDiv, mapOptions);
 
         var icon = {
           path: google.maps.SymbolPath.CIRCLE,
@@ -264,38 +282,36 @@ module.exports = {
           scale: 8
         };
 
-        $scope.userLocationMarker = addMarker(
+        userLocationMarker = addMarker(
           userLocation, icon, false, false, USER
         );
 
         // added var
-        $scope.problemMarker = null;
+        problemMarker = null;
 
-        $scope.googleMap.addListener('click', function(pos) {
+        googleMap.addListener('click', function(pos) {
           var location = {
             lat: pos.latLng.lat(),
             lng: pos.latLng.lng()
           };
 
           // added
-          if ($scope.problemMarker !== null) {
-            $scope.problemMarker.setMap(null);
+          if (problemMarker !== null) {
+            problemMarker.setMap(null);
           }
 
-          $scope.problemMarker = addMarker(
-            location, null, true, true, PROBLEM
-          );
+          problemMarker = addMarker(location, null, true, true, PROBLEM);
 
           // added listener
-          $scope.problemMarker.addListener("dblclick", function() {
-            $scope.problemMarker.setMap(null);
-            $scope.problemMarker = null;
-            $scope.problemLocation = undefined;
+          problemMarker.addListener("dblclick", function() {
+            problemMarker.setMap(null);
+            problemMarker = null;
+            problemLocation = undefined;
           });
           // location, icon, draggable, animation, myLocation
         });
 
-        $scope.firebaseApp.database()
+        firebaseApp.database()
           .ref('locations').on("value", function(snapshot) {
             var locations = snapshot.val();
 
@@ -304,14 +320,8 @@ module.exports = {
             console.log("The read failed: " + errorObject.code);
           });
 
-          // Auto set the map zoom using the extreme points
-          // $scope.googleMap.fitBounds(new google.maps.LatLngBounds(
-          //   new google.maps.LatLng($scope.latitudeMin, $scope.longitudeMin),
-          //   new google.maps.LatLng($scope.latitudeMax, $scope.longitudeMax)
-          // ));
-
           // Remove the Moblets loader after the map finish loading
-        $scope.googleMap.addListener('idle', function() {
+        googleMap.addListener('idle', function() {
           $timeout(function() {
             $scope.isLoading = false;
             var zoomButtons = document
@@ -328,17 +338,13 @@ module.exports = {
           }, 1);
         });
       });
-        // }
-      // }, 100);
     };
 
     var init = function() {
       $scope.isLoading = true;
       setProblems();
-      loadFirebase(function(firebaseApp) {
-        $scope.firebaseApp = firebaseApp;
-        $scope.isLoading = true;
-      // $scope.mapData = {}; // ????? get data from Firebase
+      loadFirebase(function(app) {
+        firebaseApp = app;
         $scope.mapHeight = screenHeightLessButton();
         $scope.listHeight = 0;
         $scope.zoomMapButtonHeight = 0;
@@ -346,27 +352,6 @@ module.exports = {
         $ionicScrollDelegate.$getByHandle('listMapScroll').resize();
         loadMap();
       });
-      // $mDataLoader.load($scope.moblet, dataLoadOptions)
-      //   .then(function(data) {
-      //     console.log(data);
-      //     // Put the data from the feed in the $scope object
-      //     $scope.mapData = data;
-      //     // Split the screen in two portions. The show list button is 44px
-      //     // and the map will take the remaining portion of the screen.
-      //     // The list and the "show map" botton are set to 0.
-      //     $scope.mapHeight = screenHeightLessButton();
-      //     $scope.listHeight = 0;
-      //     $scope.zoomMapButtonHeight = 0;
-      //     $scope.zoomListButtonHeight = "44px";
-      //
-      //     // Set the Ionic scroll javascript to the list of locations
-      //     // You need to set 'delegate-handle="listMapScroll"' on the
-      //     // HTML
-      //     $ionicScrollDelegate.$getByHandle('listMapScroll').resize();
-      //
-      //     findCenter();
-      //     loadMap();
-      //   });
     };
 
     /*
@@ -392,44 +377,25 @@ module.exports = {
     };
 
     $scope.addMyLocation = function() {
-      $scope.markerLocation = angular.copy($scope.userLocation);
-      if ($scope.problemLocation !== undefined) {
-        $scope.markerLocation = angular.copy($scope.problemLocation);
-        $scope.problemLocation = null;
-        $scope.problemMarker.setMap(null);
-        $scope.problemMarker = null;
+      if (problemLocation === undefined) {
+        markerLocation = angular.copy(userLocation);
+      } else {
+        markerLocation = angular.copy(problemLocation);
+        problemLocation = undefined;
+        problemMarker.setMap(null);
+        problemMarker = null;
       }
-      $scope.markerLocation.problems = angular.copy($scope.problemTypes);
+      markerLocation.problems = angular.copy($scope.problems);
       setProblems();
-      $scope.firebaseApp.database()
+      firebaseApp.database()
         .ref('locations')
-        .push($scope.markerLocation);
+        .push(markerLocation);
 
       $timeout(function() {
         $scope.zoomMap();
       }, 10);
     };
 
-    $scope.openLocation = function(key) {
-      var address = $scope.mapData.locations[key].address;
-      var latitude = $scope.mapData.locations[key].latitude;
-      var longitude = $scope.mapData.locations[key].longitude;
-
-      $uAlert.dialog(
-        $filter('translate')("open_in_map_app_title"),
-        $filter('translate')("open_in_map_app_message"),
-        [
-          $filter('translate')("cancel"),
-          $filter('translate')("confirm")
-        ]
-      )
-        .then(function(success) {
-          if (success) {
-            window.location.href = 'https://www.google.com.br/maps/place/' +
-              address + '/@' + latitude + ',' + longitude;
-          }
-        });
-    };
     init();
   }
 };
