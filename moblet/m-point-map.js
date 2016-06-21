@@ -23,38 +23,12 @@ module.exports = {
     $timeout,
     $mFrameSize
   ) {
+    /* ********************************************************************** *
+     *                     PRIVATE FUNCTIONS AND VARS
+     * ********************************************************************** */
     /**
-     * Find the center of the map based on the locations.
-     * Get the 4 most extree points and fix it's center
+     * Create the problemTypes $scope object
      */
-    // var findCenter = function() {
-    //   var locations = $scope.mapData.locations;
-    //   var longitudeMin = Number(locations[0].longitude);
-    //   var latitudeMin = Number(locations[0].latitude);
-    //   var longitudeMax = Number(locations[0].longitude);
-    //   var latitudeMax = Number(locations[0].latitude);
-    //
-    //   for (var i = 0; i < locations.length; i++) {
-    //     if (Number(locations[i].longitude) < longitudeMin) {
-    //       longitudeMin = Number(locations[i].longitude);
-    //     }
-    //     if (Number(locations[i].longitude) > longitudeMax) {
-    //       longitudeMax = Number(locations[i].longitude);
-    //     }
-    //     if (Number(locations[i].latitude) < latitudeMin) {
-    //       latitudeMin = Number(locations[i].latitude);
-    //     }
-    //     if (Number(locations[i].latitude) > latitudeMax) {
-    //       latitudeMax = Number(locations[i].latitude);
-    //     }
-    //   }
-    //   $scope.longitudeMin = longitudeMin;
-    //   $scope.latitudeMin = latitudeMin;
-    //   $scope.longitudeMax = longitudeMax;
-    //   $scope.latitudeMax = latitudeMax;
-    //   $scope.mapData.centerLongitude = (longitudeMax + longitudeMin) / 2;
-    //   $scope.mapData.centerLatitude = (latitudeMax + latitudeMin) / 2;
-    // };
     var setProblems = function() {
       $scope.problemTypes = {
         cobertor: false,
@@ -63,12 +37,28 @@ module.exports = {
       };
     };
 
-    var markerListener = function(infoWindow, marker, location) {
+    /**
+     * Create the info window with the location details
+     * @param  {InfoWindow} infoWindow google.maps.InfoWindow object
+     * @param  {Marker} marker     google.maps.Marker object
+     * @param  {object} location   The location stored in the DB
+     * @return {function}        The info window that will be opened on click
+     */
+    var createInfoWindow = function(infoWindow, marker, location) {
+      var problems = '';
+      for (var key in location.problems) {
+        if (location.problems.hasOwnProperty(key)) {
+          if (location.problems[key]) {
+            problems += '<h1 class="info-window-problem ' + key + '">' +
+            key + '</h1>';
+          }
+        }
+      }
       return function() {
         infoWindow.setContent(
           '<div class="marker">' +
-          '<h1>' + location.title + '</h1>' +
           '<p>' + location.address + '</p>' +
+          problems +
           '</div>');
         infoWindow.open($scope.googleMap, marker);
       };
@@ -85,7 +75,6 @@ module.exports = {
       },
         function(results, status) {
           if (status === google.maps.GeocoderStatus.OK) {
-            console.log(results[0].formatted_address);
             location.address = results[0].formatted_address;
             if (typeof callback === "function") {
               callback(location);
@@ -114,23 +103,18 @@ module.exports = {
 
       var marker = new google.maps.Marker(markerOption);
 
-      // Add the pins content
-      var infoWindow = new google.maps.InfoWindow();
-
       google.maps.event.addListener(
         marker,
         'click',
-        markerListener(infoWindow, marker, location)
+        createInfoWindow(new google.maps.InfoWindow(), marker, location)
       );
       if (locationType === "user") {
         geocodePosition(marker.getPosition(), function(location) {
           $scope.userLocation = location;
-          console.log('$scope.userLocation', $scope.userLocation);
         });
       } else if (locationType === "problem") {
         geocodePosition(marker.getPosition(), function(location) {
           $scope.problemLocation = location;
-          console.log('$scope.problemLocation', $scope.problemLocation);
         });
       }
       if (draggable) {
@@ -155,9 +139,11 @@ module.exports = {
      * @param  {boolean} animation If the marker is animated
      */
     var addMarkers = function(locations, icon, draggable, animation) {
-      // Add the pins
-      for (var i = 0; i < locations.length; i++) {
-        addMarker(locations[i], icon, draggable, animation);
+      for (var key in locations) {
+        if (locations.hasOwnProperty(key)) {
+          console.log(locations[key]);
+          addMarker(locations[key], icon, draggable, animation);
+        }
       }
     };
 
@@ -262,7 +248,6 @@ module.exports = {
         $scope.problemMarker = null;
 
         $scope.googleMap.addListener('click', function(pos) {
-          console.log(pos);
           var location = {
             lat: pos.latLng.lat(),
             lng: pos.latLng.lng()
@@ -290,17 +275,18 @@ module.exports = {
           .ref('locations').on("value", function(snapshot) {
             var locationsArray = [];
             var locationsFromFirebase = snapshot.val();
-            for (var key in locationsFromFirebase) {
-              if (locationsFromFirebase.hasOwnProperty(key)) {
-                locationsArray.push({
-                  lat: locationsFromFirebase[key].lat,
-                  lng: locationsFromFirebase[key].lng,
-                  title: locationsFromFirebase[key].title,
-                  description: locationsFromFirebase[key].description
-                });
-              }
-            }
-            addMarkers(locationsArray);
+            // console.log(locationsFromFirebase);
+            // for (var key in locationsFromFirebase) {
+            //   if (locationsFromFirebase.hasOwnProperty(key)) {
+            //     locationsArray.push({
+            //       lat: locationsFromFirebase[key].lat,
+            //       lng: locationsFromFirebase[key].lng,
+            //       title: locationsFromFirebase[key].title,
+            //       description: locationsFromFirebase[key].description
+            //     });
+            //   }
+            // }
+            addMarkers(locationsFromFirebase);
           }, function(errorObject) {
             console.log("The read failed: " + errorObject.code);
           });
@@ -394,10 +380,6 @@ module.exports = {
 
     $scope.addMyLocation = function() {
       $scope.markerLocation = angular.copy($scope.userLocation);
-      console.log('---------------------------------------');
-      console.log($scope.problemMarker);
-      console.log($scope.userLocation);
-      console.log('---------------------------------------');
       if ($scope.problemLocation !== undefined) {
         $scope.markerLocation = angular.copy($scope.problemLocation);
         $scope.problemLocation = null;
@@ -406,7 +388,6 @@ module.exports = {
       }
       $scope.markerLocation.problems = angular.copy($scope.problemTypes);
       setProblems();
-      console.log($scope.markerLocation);
       $scope.firebaseApp.database()
         .ref('locations')
         .push($scope.markerLocation);
