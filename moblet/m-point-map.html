@@ -9,8 +9,8 @@
     <div id="m-point-map-1"ng-click="zoomMap()" ng-style="{'height':mapHeight}"></div>
     <div id="zoom-list" class="zoom-button" ng-style="{'height':zoomListButtonHeight}" ng-click="zoomList()">
       <div class="zoom-buttom-wraper" ng-style="{'height':zoomListButtonHeight}">
-        <i class="icon ion-chevron-up"></i>
-        <p>Adicionar um problema</p>
+
+        <p><i class="icon ion-plus-round"></i>Adicionar um problema</p>
       </div>
     </div>
     <ion-scroll id="m-point-map-list" overflow-scroll="false" direction="y" delegate-handle="listMapScroll" ng-style="{'height':listHeight}" ng-click="zoomList()">
@@ -21,10 +21,10 @@
         <ion-toggle ng-repeat="(key, problem) in problems"
                     ng-model="problems[key]"
                     ng-checked="problemType">
-          {{ key }}
+          <img src="../svgs/{{ RESOURCE_DEF[key] }}-icon.svg"/> {{ key }}
         </ion-toggle>
         <div class="item">
-          <button class="button button-positive" ng-click="addMyLocation()">Enviar problemas</button>
+          <button class="button red-button" ng-click="addMyLocation()">Enviar problemas</button>
         </div>
 
       </div>

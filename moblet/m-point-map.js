@@ -43,6 +43,13 @@ module.exports = {
       PET: 'Utensílios para Pets'
     };
 
+    $scope.RESOURCE_DEF = {
+      Comida: 'food',
+      Roupa: 'clothes',
+      Cobertor: 'blanket',
+      'Utensílios para Pets': 'pets'
+    };
+
     var getObjectLength = function(object) {
       if (object === undefined || object === null) {
         response = 0;
@@ -332,7 +339,7 @@ module.exports = {
 
         var mapDiv = document.getElementById('m-point-map-1');
 
-          // Set the map options
+        // Set the map options
         var mapOptions = {
           mapTypeControl: false,
           streetViewControl: true,
@@ -344,8 +351,10 @@ module.exports = {
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
+        // Create the googleMap object
         googleMap = new google.maps.Map(mapDiv, mapOptions);
 
+        // Create the current user location marker
         var icon = {
           path: google.maps.SymbolPath.CIRCLE,
           fillColor: '#46AEE2',
@@ -354,14 +363,12 @@ module.exports = {
           strokeWeight: 2,
           scale: 8
         };
-
         userLocationMarker = addMarker(
           userLocation, icon, false, false, USER
         );
 
-        // added var
+        // Create the listener for click on map create the default pointer
         problemMarker = null;
-
         googleMap.addListener('click', function(pos) {
           var location = {
             lat: pos.latLng.lat(),
@@ -373,16 +380,23 @@ module.exports = {
             problemMarker.setMap(null);
           }
 
-          problemMarker = addMarker(location, null, true, 4, PROBLEM);
+          icon = new google.maps.MarkerImage(
+            '../svgs/default-pointer.svg',
+            null, null, null, new google.maps.Size(35, 44)
+          );
 
-          // added listener
-          problemMarker.addListener("dblclick", function() {
+          problemMarker = addMarker(location, icon, true, 4, PROBLEM);
+
+          // Create the listener to remove the mark
+          problemMarker.addListener("click", function() {
             problemMarker.setMap(null);
             problemMarker = null;
             problemLocation = undefined;
           });
         });
 
+        // Get locations from backend and creathe the Soccet Tunnel
+        // with Firebase
         firebaseApp.database()
           .ref('locations').on("value", function(snapshot) {
             var oldLocations = locations;
@@ -399,7 +413,8 @@ module.exports = {
             console.log("The read failed: " + errorObject.code);
           });
 
-          // Remove the Moblets loader after the map finish loading
+        // Remove the Moblets loader and create the view after the map
+        // finishes loading
         googleMap.addListener('idle', function() {
           $timeout(function() {
             $scope.isLoading = false;

@@ -46,20 +46,27 @@ m-point-map {
   }
   #zoom-list {
     p {
-      margin: -5px 0 5px 0;
+      margin: 10px auto;
+      font-weight: 700;
     }
   }
   #zoom-map {
     p {
       margin: 5px 0 -5px 0;
+      font-weight: 700;
     }
   }
   .button {
     width: 100%;
   }
-  .zoom-button {
-    background-color: #387ef5;
+  .red-button {
+    background-color: #C64647;
     color: white;
+    font-weight: 700;
+  }
+  .zoom-button {
+    background-color: white;
+    color: #C64647;
     overflow: hidden;
     text-align: center;
     font-size: 16px;
@@ -68,9 +75,10 @@ m-point-map {
     border-color: #aaa;
     text-align: -webkit-center;
     i {
-      font-size: 10px;
-      margin: 0;
+      font-size: 16px;
+      margin: 0 5px;
     }
+
     .ng-enter, .ng-leave.ng-leave-active {
       opacity:0;
     }
