@@ -8,8 +8,6 @@ module.exports = {
     en: "lang/en-US.json"
   },
   link: function() {
-    // $uInjector.inject('http://maps.google.com/maps/api/js' +
-    //   '?key=AIzaSyDNzstSiq9llIK8b49En0dT-yFA5YpManU&amp;sensor=true');
     $uInjector.inject('https://www.gstatic.com/firebasejs/' +
       'live/3.0/firebase.js');
   },
@@ -31,20 +29,51 @@ module.exports = {
 
     var googleMap;
     var firebaseApp;
+    var locations;
     var userLocation;
     var problemLocation;
     var markerLocation;
     var problemMarker;
+    var markerZindex = 100;
 
+    var PROBLEMS_DEF = {
+      COMIDA: 'Comida',
+      ROUPA: 'Roupa',
+      COBERTOR: 'Cobertor',
+      PET: 'Utensílios para Pets'
+    };
+
+    var getObjectLength = function(object) {
+      if (object === undefined || object === null) {
+        response = 0;
+      } else {
+        response = Object.keys(object).length;
+      }
+      return response;
+    };
+
+    var getNewLocation = function(oldLocations, newLocations) {
+      for (var newKey in newLocations) {
+        if (newLocations.hasOwnProperty(newKey)) {
+          for (var oldKey in oldLocations) {
+            if (oldLocations.hasOwnProperty(oldKey)) {
+              if (!oldLocations.hasOwnProperty(newKey)) {
+                return newLocations[newKey];
+              }
+            }
+          }
+        }
+      }
+    };
     /**
      * Create the problems $scope object
      */
     var setProblems = function() {
-      $scope.problems = {
-        cobertor: false,
-        roupa: false,
-        comida: false
-      };
+      $scope.problems = {};
+      $scope.problems[PROBLEMS_DEF.COMIDA] = false;
+      $scope.problems[PROBLEMS_DEF.ROUPA] = false;
+      $scope.problems[PROBLEMS_DEF.COBERTOR] = false;
+      $scope.problems[PROBLEMS_DEF.PET] = false;
     };
 
     /**
@@ -61,8 +90,25 @@ module.exports = {
       for (var key in location.problems) {
         if (location.problems.hasOwnProperty(key)) {
           if (location.problems[key]) {
-            problems += '<h1 class="info-window-problem ' + key + '">' +
-            key + '</h1>';
+            var iconPath = '';
+            var fontClass = 'info-problem-many';
+
+            if (key === PROBLEMS_DEF.PET) {
+              iconPath = '../svgs/pets-icon.svg';
+              fontClass = 'info-problem-pets';
+            } else if (key === PROBLEMS_DEF.COBERTOR) {
+              iconPath = '../svgs/blanket-icon.svg';
+              fontClass = 'info-problem-blanket';
+            } else if (key === PROBLEMS_DEF.ROUPA) {
+              iconPath = '../svgs/clothes-icon.svg';
+              fontClass = 'info-problem-clothes';
+            } else if (key === PROBLEMS_DEF.COMIDA) {
+              iconPath = '../svgs/food-icon.svg';
+              fontClass = 'info-problem-food';
+            }
+
+            problems += '<h1 class="' + fontClass + '">' +
+                        '<img src="' + iconPath + '"/>' + key + '</h1>';
           }
         }
       }
@@ -107,6 +153,35 @@ module.exports = {
       });
     };
 
+    var setMarkerIcon = function(problems) {
+      var iconPath;
+
+      if (problems === undefined || problems === null) {
+        iconPath = '../svgs/many-pointer.svg';
+      } else if (problems.Cobertor && problems.Roupa ||
+          problems.Cobertor && problems.Comida ||
+          problems.Cobertor && problems['Utensílios para Pets'] ||
+          problems.Roupa && problems.Comida ||
+          problems.Roupa && problems['Utensílios para Pets'] ||
+          problems.Comida && problems['Utensílios para Pets']) {
+        iconPath = '../svgs/many-pointer.svg';
+      } else if (problems.Cobertor) {
+        iconPath = '../svgs/blanket-pointer.svg';
+      } else if (problems.Roupa) {
+        iconPath = '../svgs/clothes-pointer.svg';
+      } else if (problems.Comida) {
+        iconPath = '../svgs/food-pointer.svg';
+      } else if (problems['Utensílios para Pets']) {
+        iconPath = '../svgs/pets-pointer.svg';
+      } else {
+        iconPath = '../svgs/many-pointer.svg';
+      }
+      icon = new google.maps.MarkerImage(
+        iconPath, null, null, null, new google.maps.Size(35, 44)
+      );
+
+      return icon;
+    };
     /**
      * Add a new marker to the map
      * @param  {object} location     Location with lat, lng, address and
@@ -120,10 +195,11 @@ module.exports = {
     var addMarker = function(location, icon, drag, anime, locationType) {
       var markerOption = {
         position: location,
-        icon: icon || null,
-        draggable: drag || false,
         map: googleMap,
-        animation: google.maps.Animation.DROP
+        icon: icon || setMarkerIcon(location.problems),
+        draggable: drag || false,
+        animation: anime || google.maps.Animation.DROP,
+        zIndex: markerZindex++
       };
       if (anime === false) {
         markerOption.animation = null;
@@ -155,7 +231,7 @@ module.exports = {
             getLocationWithAddress(
               marker.getPosition(),
               function(location) {
-                markerLocation = location;
+                problemLocation = location;
               }
             );
           }
@@ -173,9 +249,6 @@ module.exports = {
     var addMarkers = function(locations) {
       for (var key in locations) {
         if (locations.hasOwnProperty(key)) {
-          /*
-           * TODO: set icon according to the problem
-           */
           addMarker(locations[key]);
         }
       }
@@ -276,7 +349,7 @@ module.exports = {
         var icon = {
           path: google.maps.SymbolPath.CIRCLE,
           fillColor: '#46AEE2',
-          fillOpacity: 0.9,
+          fillOpacity: 0.5,
           strokeColor: '#4778BB',
           strokeWeight: 2,
           scale: 8
@@ -300,7 +373,7 @@ module.exports = {
             problemMarker.setMap(null);
           }
 
-          problemMarker = addMarker(location, null, true, true, PROBLEM);
+          problemMarker = addMarker(location, null, true, 4, PROBLEM);
 
           // added listener
           problemMarker.addListener("dblclick", function() {
@@ -308,14 +381,20 @@ module.exports = {
             problemMarker = null;
             problemLocation = undefined;
           });
-          // location, icon, draggable, animation, myLocation
         });
 
         firebaseApp.database()
           .ref('locations').on("value", function(snapshot) {
-            var locations = snapshot.val();
+            var oldLocations = locations;
+            locations = snapshot.val();
+            var oldSize = getObjectLength(oldLocations);
 
-            addMarkers(locations);
+            if (oldSize === 0) {
+              addMarkers(locations);
+            } else {
+              var newLocation = getNewLocation(oldLocations, locations);
+              addMarker(newLocation);
+            }
           }, function(errorObject) {
             console.log("The read failed: " + errorObject.code);
           });
