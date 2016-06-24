@@ -74,10 +74,6 @@ m-point-map {
     border-style: solid;
     border-color: #aaa;
     text-align: -webkit-center;
-    i {
-      font-size: 16px;
-      margin: 0 5px;
-    }
 
     .ng-enter, .ng-leave.ng-leave-active {
       opacity:0;
@@ -85,6 +81,17 @@ m-point-map {
 
     .ng-leave, .ng-enter.ng-enter-active {
       opacity:1;
+    }
+  }
+  .item-toggle {
+    img {
+      position: absolute;
+      top: 15px;
+      height: 22px;
+    }
+
+    span {
+      margin-left: 35px;
     }
   }
 }

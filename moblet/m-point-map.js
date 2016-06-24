@@ -43,11 +43,11 @@ module.exports = {
       PET: 'Utensílios para Pets'
     };
 
-    $scope.RESOURCE_DEF = {
-      Comida: 'food',
-      Roupa: 'clothes',
-      Cobertor: 'blanket',
-      'Utensílios para Pets': 'pets'
+    $scope.ICON_SVG_PATH = {
+      "Comida": '../svgs/food-icon.svg',
+      "Roupa": '../svgs/clothes-icon.svg',
+      "Cobertor": '../svgs/blanket-icon.svg',
+      "Utensílios para Pets": '../svgs/pets-icon.svg'
     };
 
     var getObjectLength = function(object) {
@@ -273,8 +273,8 @@ module.exports = {
        */
       // São Paulo center
       var defaultLocation = {
-        lat: -23.6821604,
-        lng: -46.8754891
+        lat: -23.55038080370918,
+        lng: -46.63395881652832
       };
       if (navigator.geolocation) {
         browserSupportFlag = true;
