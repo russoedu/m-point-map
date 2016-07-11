@@ -314,7 +314,7 @@ module.exports = {
       $timeout(function() {
         // Wait until 'firebase api' has been injected
         if (typeof firebase === "undefined") {
-          loadFirebase();
+          loadFirebase(callback);
         } else if (isDefined(window.firebaseApp)) {
           callback(window.firebaseApp);
         } else {
