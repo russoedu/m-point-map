@@ -1,4 +1,4 @@
-m-point-map {
+m-point-map-institutions {
   .list {
     overflow-y: scroll;
   }
@@ -93,5 +93,10 @@ m-point-map {
     span {
       margin-left: 35px;
     }
+  }
+  .ng-invalid.ng-dirty{
+    -webkit-box-shadow: 0px 0px 5px 0px rgba(255,0,0,1);
+    -moz-box-shadow: 0px 0px 5px 0px rgba(255,0,0,1);
+    box-shadow: 0px 0px 5px 0px rgba(255,0,0,1);
   }
 }

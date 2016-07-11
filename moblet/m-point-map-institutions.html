@@ -9,13 +9,32 @@
     <div id="m-point-map-1"ng-click="zoomMap()" ng-style="{'height':mapHeight}"></div>
     <div id="zoom-list" class="zoom-button" ng-style="{'height':zoomListButtonHeight}" ng-click="zoomList()">
       <div class="zoom-buttom-wraper" ng-style="{'height':zoomListButtonHeight}">
-        <p>+ Adicionar um problema</p>
+        <p>+ Adicionar uma instituição</p>
       </div>
     </div>
     <ion-scroll id="m-point-map-list" overflow-scroll="false" direction="y" delegate-handle="listMapScroll" ng-style="{'height':listHeight}" ng-click="zoomList()">
-      <div class="list">
+      <form class="list" name="InstituitionForm">
         <div class="item item-divider">
-          Tipo de problema
+          Dados da instituição
+        </div>
+        <label class="item item-input">
+          <span class="input-label">Nome</span>
+          <input type="text" ng-model="institution.name" required>
+        </label>
+        <label class="item item-input">
+          <span class="input-label">Endereço</span>
+          <input type="text" ng-model="institution.address" required>
+        </label>
+        <label class="item item-input">
+          <span class="input-label">Telefone</span>
+          <input type="tel" ng-model="institution.phone" required>
+        </label>
+        <label class="item item-input">
+          <span class="input-label">Email</span>
+          <input type="email" name="Email" ng-model="institution.email" required>
+        </label>
+        <div class="item item-divider">
+          Problemas atendidos
         </div>
         <ion-toggle ng-repeat="(key, problem) in problems"
                     ng-model="problems[key]"
@@ -24,9 +43,9 @@
           <span ng-bind="key"></span>
         </ion-toggle>
         <div class="item">
-          <button class="button red-button" ng-click="addMyLocation()">Enviar problemas</button>
+          <button class="button red-button" ng-click="addMyLocation(InstituitionForm.$valid)">Enviar problemas</button>
         </div>
-      </div>
+      </form>
     </ion-scroll>
   </div>
 </m-moblet>

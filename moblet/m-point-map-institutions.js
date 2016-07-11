@@ -1,8 +1,8 @@
 /* eslint no-undef: [0]*/
 module.exports = {
-  title: "mPointMap",
-  style: "m-point-map.scss",
-  template: 'm-point-map.html',
+  title: "mPointMapInstitutions",
+  style: "m-point-map-institutions.scss",
+  template: 'm-point-map-institutions.html',
   i18n: {
     pt: "lang/pt-BR.json",
     en: "lang/en-US.json"
@@ -75,7 +75,7 @@ module.exports = {
     /**
      * Create the problems $scope object
      */
-    var setProblems = function() {
+    var resetProblems = function() {
       $scope.problems = {};
       $scope.problems[PROBLEMS_DEF.COMIDA] = false;
       $scope.problems[PROBLEMS_DEF.ROUPA] = false;
@@ -398,7 +398,7 @@ module.exports = {
         // Get locations from backend and creathe the Soccet Tunnel
         // with Firebase
         firebaseApp.database()
-          .ref('locations').on("value", function(snapshot) {
+          .ref('institutions').on("value", function(snapshot) {
             var oldLocations = locations;
             locations = snapshot.val();
             var oldSize = getObjectLength(oldLocations);
@@ -436,13 +436,16 @@ module.exports = {
 
     var init = function() {
       $scope.isLoading = true;
-      setProblems();
+      resetProblems();
       loadFirebase(function(app) {
         firebaseApp = app;
         $scope.mapHeight = screenHeightLessButton();
         $scope.listHeight = 0;
         $scope.zoomMapButtonHeight = 0;
         $scope.zoomListButtonHeight = "44px";
+
+        $scope.institution = {};
+
         $ionicScrollDelegate.$getByHandle('listMapScroll').resize();
         loadMap();
       });
@@ -457,6 +460,13 @@ module.exports = {
       $scope.zoomMapButtonHeight = "44px";
       $scope.zoomListButtonHeight = 0;
       $ionicScrollDelegate.$getByHandle('listMapScroll').resize();
+      if (userLocation || problemLocation) {
+        $scope.institution.address = problemLocation === undefined ?
+                                     userLocation.address :
+                                     problemLocation.address;
+      } else {
+        $scope.institution.address = '';
+      }
     };
 
     /**
@@ -470,23 +480,33 @@ module.exports = {
       $ionicScrollDelegate.$getByHandle('listMapScroll').resize();
     };
 
-    $scope.addMyLocation = function() {
-      if (problemLocation === undefined) {
-        markerLocation = angular.copy(userLocation);
-      } else {
-        markerLocation = angular.copy(problemLocation);
-        problemLocation = undefined;
-        problemMarker.setMap(null);
-        problemMarker = null;
-      }
-      markerLocation.problems = angular.copy($scope.problems);
-      setProblems();
-      firebaseApp.database()
-        .ref('locations')
-        .push(markerLocation);
-
+    $scope.addMyLocation = function(valid) {
       $timeout(function() {
-        $scope.zoomMap();
+        if (valid) {
+          if (problemLocation === undefined) {
+            markerLocation = angular.copy(userLocation);
+          } else {
+            markerLocation = angular.copy(problemLocation);
+            problemLocation = undefined;
+            problemMarker.setMap(null);
+            problemMarker = null;
+          }
+          markerLocation.problems = angular.copy($scope.problems);
+          markerLocation.name = $scope.institution.name;
+          markerLocation.address = $scope.institution.address;
+          markerLocation.phone = $scope.institution.phone;
+          markerLocation.email = $scope.institution.email;
+          resetProblems();
+          firebaseApp.database()
+          .ref('institutions')
+          .push(markerLocation);
+
+          $scope.institution = { };
+          $ionicScrollDelegate.scrollTop();
+          $scope.zoomMap();
+        } else {
+          $ionicScrollDelegate.scrollTop();
+        }
       }, 10);
     };
 
