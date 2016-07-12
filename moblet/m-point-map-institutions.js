@@ -465,7 +465,7 @@ module.exports = {
                                      userLocation.address :
                                      problemLocation.address;
       } else {
-        $scope.institution.address = '';
+        $scope.institution.address = undefined;
       }
     };
 
@@ -495,11 +495,16 @@ module.exports = {
           markerLocation.name = $scope.institution.name;
           markerLocation.address = $scope.institution.address;
           markerLocation.phone = $scope.institution.phone;
-          markerLocation.email = $scope.institution.email;
+          markerLocation.site = $scope.institution.site;
+
+          var instInput = document.getElementsByClassName('institution-input');
+          for (i = 0; i < instInput.length; i++) {
+            instInput[i].className = 'institution-input';
+          }
           resetProblems();
           firebaseApp.database()
-          .ref('institutions')
-          .push(markerLocation);
+            .ref('institutions')
+            .push(markerLocation);
 
           $scope.institution = { };
           $ionicScrollDelegate.scrollTop();

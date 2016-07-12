@@ -1,4 +1,5 @@
 m-point-map-institutions {
+  $redColor: #C64647;
   .list {
     overflow-y: scroll;
   }
@@ -60,13 +61,13 @@ m-point-map-institutions {
     width: 100%;
   }
   .red-button {
-    background-color: #C64647;
+    background-color: $redColor;
     color: white;
     font-weight: 700;
   }
   .zoom-button {
     background-color: white;
-    color: #C64647;
+    color: $redColor;
     overflow: hidden;
     text-align: center;
     font-size: 16px;
@@ -94,9 +95,10 @@ m-point-map-institutions {
       margin-left: 35px;
     }
   }
-  .ng-invalid.ng-dirty{
-    -webkit-box-shadow: 0px 0px 5px 0px rgba(255,0,0,1);
-    -moz-box-shadow: 0px 0px 5px 0px rgba(255,0,0,1);
-    box-shadow: 0px 0px 5px 0px rgba(255,0,0,1);
+  .ng-invalid.ng-touched{
+    -webkit-box-shadow: 0px 0px 5px 0px $redColor;
+    -moz-box-shadow: 0px 0px 5px 0px $redColor;
+    box-shadow: 0px 0px 5px 0px $redColor;
+    border-radius: 4px;
   }
 }

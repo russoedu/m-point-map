@@ -19,19 +19,34 @@
         </div>
         <label class="item item-input">
           <span class="input-label">Nome</span>
-          <input type="text" ng-model="institution.name" required>
+          <input
+            class="institution-input" type="text"
+            ng-model="institution.name" required
+            ng-model-options="{ updateOn: 'blur' }"
+          >
         </label>
         <label class="item item-input">
           <span class="input-label">Endereço</span>
-          <input type="text" ng-model="institution.address" required>
+          <input
+            class="institution-input" type="text"
+            ng-model="institution.address" required
+            ng-model-options="{ updateOn: 'blur' }"
+          >
         </label>
         <label class="item item-input">
           <span class="input-label">Telefone</span>
-          <input type="tel" ng-model="institution.phone" required>
+          <input
+            class="institution-input" type="tel"
+            ng-model="institution.phone" required
+            ng-model-options="{ updateOn: 'blur' }"
+          >
         </label>
         <label class="item item-input">
-          <span class="input-label">Email</span>
-          <input type="email" name="Email" ng-model="institution.email" required>
+          <span class="input-label">Site</span>
+          <input
+            class="institution-input" type="text"
+            name="Site" ng-model="institution.site"
+          >
         </label>
         <div class="item item-divider">
           Problemas atendidos
@@ -43,7 +58,7 @@
           <span ng-bind="key"></span>
         </ion-toggle>
         <div class="item">
-          <button class="button red-button" ng-click="addMyLocation(InstituitionForm.$valid)">Enviar problemas</button>
+          <button class="button red-button" ng-click="addMyLocation(InstituitionForm.$valid)">Enviar nova instituição</button>
         </div>
       </form>
     </ion-scroll>
