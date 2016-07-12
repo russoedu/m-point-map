@@ -9,13 +9,13 @@
     <div id="m-point-map-1"ng-click="zoomMap()" ng-style="{'height':mapHeight}"></div>
     <div id="zoom-list" class="zoom-button" ng-style="{'height':zoomListButtonHeight}" ng-click="zoomList()">
       <div class="zoom-buttom-wraper" ng-style="{'height':zoomListButtonHeight}">
-        <p>+ Adicionar uma instituição</p>
+        <p>+ Adicionar uma iniciativa</p>
       </div>
     </div>
     <ion-scroll id="m-point-map-list" overflow-scroll="false" direction="y" delegate-handle="listMapScroll" ng-style="{'height':listHeight}" ng-click="zoomList()">
       <form class="list" name="InstituitionForm">
         <div class="item item-divider">
-          Dados da instituição
+          Dados da iniciativa
         </div>
         <label class="item item-input">
           <span class="input-label">Nome</span>
@@ -58,7 +58,7 @@
           <span ng-bind="key"></span>
         </ion-toggle>
         <div class="item">
-          <button class="button red-button" ng-click="addMyLocation(InstituitionForm.$valid)">Enviar nova instituição</button>
+          <button class="button red-button" ng-click="addMyLocation(InstituitionForm.$valid)">Enviar nova iniciativa</button>
         </div>
       </form>
     </ion-scroll>
