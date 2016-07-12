@@ -119,8 +119,16 @@ module.exports = {
           }
         }
       }
-      var infoWindowStr = '<div class="marker"><p>' + location.address +
-      '</p>' + problems + '</div>';
+      var site = locations.site === undefined ?
+       '' :
+       '<p>' + location.site + '</p>';
+
+      var infoWindowStr = '<div class="marker">' +
+                          '<h1>' + location.name + '</h1>' +
+                          '<p>' + location.address + '</p>' +
+                          '<p>' + location.phone + '</p>' +
+                          site +
+                           problems + '</div>';
 
       infoWindow = new google.maps.InfoWindow({
         content: infoWindowStr,
