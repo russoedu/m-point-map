@@ -13,12 +13,11 @@ module.exports = {
   },
   controller: function(
     $scope,
-    $mMoblet,
-    $mDataLoader,
     $filter,
     $ionicScrollDelegate,
-    $uAlert,
     $timeout,
+    $mMoblet,
+    $mDataLoader,
     $mFrameSize
   ) {
     /* ********************************************************************** *
@@ -98,7 +97,7 @@ module.exports = {
         if (location.problems.hasOwnProperty(key)) {
           if (location.problems[key]) {
             var iconPath = '';
-            var fontClass = 'info-problem-many';
+            var fontClass = 'info-problem-many-inst';
 
             if (key === PROBLEMS_DEF.PET) {
               iconPath = '../svgs/pets-icon.svg';
@@ -172,14 +171,14 @@ module.exports = {
       var iconPath;
 
       if (problems === undefined || problems === null) {
-        iconPath = '../svgs/many-pointer.svg';
+        iconPath = '../svgs/many-inst-pointer.svg';
       } else if (problems.Cobertor && problems.Roupa ||
           problems.Cobertor && problems.Comida ||
           problems.Cobertor && problems['Utensílios para Pets'] ||
           problems.Roupa && problems.Comida ||
           problems.Roupa && problems['Utensílios para Pets'] ||
           problems.Comida && problems['Utensílios para Pets']) {
-        iconPath = '../svgs/many-pointer.svg';
+        iconPath = '../svgs/many-inst-pointer.svg';
       } else if (problems.Cobertor) {
         iconPath = '../svgs/blanket-pointer.svg';
       } else if (problems.Roupa) {
@@ -189,7 +188,7 @@ module.exports = {
       } else if (problems['Utensílios para Pets']) {
         iconPath = '../svgs/pets-pointer.svg';
       } else {
-        iconPath = '../svgs/many-pointer.svg';
+        iconPath = '../svgs/many-inst-pointer.svg';
       }
       icon = new google.maps.MarkerImage(
         iconPath, null, null, null, new google.maps.Size(35, 44)
@@ -344,8 +343,7 @@ module.exports = {
     var loadMap = function() {
       findUserLocation(function(location) {
         userLocation = location;
-
-        var mapDiv = document.getElementById('m-point-map-1');
+        var mapDiv = document.getElementById('m-point-map-' + $scope.moblet.id);
 
         // Set the map options
         var mapOptions = {
@@ -432,7 +430,7 @@ module.exports = {
               zoomButtons[z].className += ' animate';
             }
             document
-                .getElementById('m-point-map-1')
+                .getElementById('m-point-map-' + $scope.moblet.id)
                 .className = 'animate';
             document
                 .getElementById('m-point-map-list')
@@ -503,7 +501,9 @@ module.exports = {
           markerLocation.name = $scope.institution.name;
           markerLocation.address = $scope.institution.address;
           markerLocation.phone = $scope.institution.phone;
-          markerLocation.site = $scope.institution.site;
+          markerLocation.site = $scope.institution.site === undefined ?
+                                '' :
+                                $scope.institution.site;
 
           var instInput = document.getElementsByClassName('institution-input');
           for (i = 0; i < instInput.length; i++) {
