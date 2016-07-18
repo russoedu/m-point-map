@@ -15,6 +15,7 @@ module.exports = {
     $scope,
     $filter,
     $ionicScrollDelegate,
+    $cordovaGeolocation,
     $timeout,
     $mMoblet,
     $mDataLoader,
@@ -273,12 +274,12 @@ module.exports = {
      * @param  {userCurrentLocationCallback} callback The current user location
      */
     var findUserLocation = function(callback) {
-      /**
-       * @callback userCurrentLocationCallback
-       * @param  {object} userLocation The current user location with lat
-       * and lng
-       */
-      // São Paulo center
+       /**
+        * @callback userCurrentLocationCallback
+        * @param  {object} userLocation The current user location with lat
+        * and lng
+        */
+       // São Paulo center
       var defaultLocation = {
         lat: -23.55038080370918,
         lng: -46.63395881652832
@@ -294,7 +295,9 @@ module.exports = {
         }, function() {
           browserSupportFlag = false;
           callback(defaultLocation);
-        });
+        },
+         {timeout: 5000, enableHighAccuracy: false}
+       );
       } else {
         browserSupportFlag = false;
         callback(defaultLocation);
