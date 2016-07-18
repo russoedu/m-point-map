@@ -292,6 +292,7 @@ module.exports = {
           };
           callback(userLocation);
         }, function() {
+          browserSupportFlag = false;
           callback(defaultLocation);
         });
       } else {
