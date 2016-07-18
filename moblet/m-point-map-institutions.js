@@ -357,7 +357,7 @@ module.exports = {
           rotateControl: false,
           zoomControl: true,
           center: userLocation,
-          zoom: 12,
+          zoom: 10,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
