@@ -44,10 +44,10 @@ module.exports = {
     };
 
     $scope.ICON_SVG_PATH = {
-      "Comida": '../svgs/food-icon.svg',
-      "Roupa": '../svgs/clothes-icon.svg',
-      "Cobertor": '../svgs/blanket-icon.svg',
-      "Utensílios para Pets": '../svgs/pets-icon.svg'
+      "Comida": 'svgs/food-icon.svg',
+      "Roupa": 'svgs/clothes-icon.svg',
+      "Cobertor": 'svgs/blanket-icon.svg',
+      "Utensílios para Pets": 'svgs/pets-icon.svg'
     };
 
     var getObjectLength = function(object) {
@@ -101,16 +101,16 @@ module.exports = {
             var fontClass = 'info-problem-many-inst';
 
             if (key === PROBLEMS_DEF.PET) {
-              iconPath = '../svgs/pets-icon.svg';
+              iconPath = 'svgs/pets-icon.svg';
               fontClass = 'info-problem-pets';
             } else if (key === PROBLEMS_DEF.COBERTOR) {
-              iconPath = '../svgs/blanket-icon.svg';
+              iconPath = 'svgs/blanket-icon.svg';
               fontClass = 'info-problem-blanket';
             } else if (key === PROBLEMS_DEF.ROUPA) {
-              iconPath = '../svgs/clothes-icon.svg';
+              iconPath = 'svgs/clothes-icon.svg';
               fontClass = 'info-problem-clothes';
             } else if (key === PROBLEMS_DEF.COMIDA) {
-              iconPath = '../svgs/food-icon.svg';
+              iconPath = 'svgs/food-icon.svg';
               fontClass = 'info-problem-food';
             }
 
@@ -172,24 +172,24 @@ module.exports = {
       var iconPath;
 
       if (problems === undefined || problems === null) {
-        iconPath = '../svgs/many-inst-pointer.svg';
+        iconPath = 'svgs/many-inst-pointer.svg';
       } else if (problems.Cobertor && problems.Roupa ||
           problems.Cobertor && problems.Comida ||
           problems.Cobertor && problems['Utensílios para Pets'] ||
           problems.Roupa && problems.Comida ||
           problems.Roupa && problems['Utensílios para Pets'] ||
           problems.Comida && problems['Utensílios para Pets']) {
-        iconPath = '../svgs/many-inst-pointer.svg';
+        iconPath = 'svgs/many-inst-pointer.svg';
       } else if (problems.Cobertor) {
-        iconPath = '../svgs/blanket-pointer.svg';
+        iconPath = 'svgs/blanket-pointer.svg';
       } else if (problems.Roupa) {
-        iconPath = '../svgs/clothes-pointer.svg';
+        iconPath = 'svgs/clothes-pointer.svg';
       } else if (problems.Comida) {
-        iconPath = '../svgs/food-pointer.svg';
+        iconPath = 'svgs/food-pointer.svg';
       } else if (problems['Utensílios para Pets']) {
-        iconPath = '../svgs/pets-pointer.svg';
+        iconPath = 'svgs/pets-pointer.svg';
       } else {
-        iconPath = '../svgs/many-inst-pointer.svg';
+        iconPath = 'svgs/many-inst-pointer.svg';
       }
       icon = new google.maps.MarkerImage(
         iconPath, null, null, null, new google.maps.Size(35, 44)
@@ -391,7 +391,7 @@ module.exports = {
           }
 
           icon = new google.maps.MarkerImage(
-            '../svgs/default-pointer.svg',
+            'svgs/default-pointer.svg',
             null, null, null, new google.maps.Size(35, 44)
           );
 
