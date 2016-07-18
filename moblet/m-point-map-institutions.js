@@ -8,7 +8,7 @@ module.exports = {
     en: "lang/en-US.json"
   },
   link: function() {
-    $uInjector.inject('https://www.gstatic.com/firebasejs/' +
+    $mInjector.inject('https://www.gstatic.com/firebasejs/' +
       'live/3.0/firebase.js');
   },
   controller: function(
